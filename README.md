@@ -13,7 +13,7 @@ Proyecto web desarrollado con HTML, Bootstrap y JavaScript que permite gestionar
 ## Cómo usar
 
 1. Descargar el proyecto
-2. Abrir el archivo index.html
+2. Abrir el archivo inventario.html
 
 ## Autores
 
