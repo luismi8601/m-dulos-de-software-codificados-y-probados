@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="./css/bootstrap.css">
+<script src="./js/bootstrap.js"></script>
+
+<title>Inventario de Pijamas</title>
+</head>
+
+<body>
+
+<div class="container mt-4">
+
+<h1 class="text-center text-primary">INVENTARIO DE PIJAMAS</h1>
+
+<p class="text-center">
+Gestión del inventario de productos disponibles en la tienda.
+</p>
+
+<div id="alerta"></div>
+
+<div class="text-center mb-3">
+
+<button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAgregar">
+Agregar Producto
+</button>
+
+<button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalModificar" onclick="cargarModificar()">
+Modificar Producto
+</button>
+
+<button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar" onclick="cargarEliminar()">
+Eliminar Producto
+</button>
+
+</div>
+
+<div class="mb-3">
+    <!-- AGREGAMOS UN BUSCADOR-->
+<input type="text" class="form-control" placeholder="Buscar pijama..." onkeyup="buscarPijama(this.value)">
+</div>
+<!-- TABLA -->
+<table class="table table-striped">
+<thead class="table-primary">
+<tr>
+<th>Nombre</th>
+<th>Cantidad</th>
+<th>Precio</th>
+</tr>
+</thead>
+
+
+<tbody id="tablaInventario"></tbody>
+
+</table>
+
+</div>
+
+<!-- MODAL AGREGAR -->
+
+<div class="modal fade" id="modalAgregar">
+<div class="modal-dialog">
+<div class="modal-content">
+
+<div class="modal-header">
+<h5 class="modal-title">Agregar Pijama</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+<input id="nombre" class="form-control mb-2" placeholder="Nombre">
+
+<input id="cantidad" type="number" class="form-control mb-2" placeholder="Cantidad">
+
+<input id="precio" type="number" class="form-control mb-2" placeholder="Precio">
+
+</div>
+
+<div class="modal-footer">
+    <!-- EJECUTAMOS LA FUNCION DE JAVASCRIPT agregarPijama -->
+<button class="btn btn-primary" onclick="agregarPijama()">Guardar</button>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- MODAL MODIFICAR -->
+
+<div class="modal fade" id="modalModificar">
+<div class="modal-dialog">
+<div class="modal-content">
+
+<div class="modal-header">
+<h5 class="modal-title">Modificar Pijama</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+<select id="selectModificar" class="form-control mb-2" onchange="cargarDatosModificar()"></select>
+
+<input id="nuevoNombre" class="form-control mb-2">
+
+<input id="nuevaCantidad" type="number" class="form-control mb-2">
+
+<input id="nuevoPrecio" type="number" class="form-control mb-2">
+
+</div>
+
+<div class="modal-footer">
+<button class="btn btn-warning" onclick="modificarPijama()">Modificar</button>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+
+<div class="modal fade" id="modalEliminar">
+<div class="modal-dialog">
+<div class="modal-content">
+
+<div class="modal-header">
+<h5 class="modal-title">Eliminar Pijama</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+<ul id="listaEliminar" class="list-group"></ul>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+
+let inventario = JSON.parse(localStorage.getItem("inventario")) || []
+
+function guardarDatos(){
+localStorage.setItem("inventario", JSON.stringify(inventario))
+}
+
+function mostrarAlerta(mensaje,tipo){
+
+document.getElementById("alerta").innerHTML = `
+<div class="alert alert-${tipo} alert-dismissible fade show">
+${mensaje}
+<button class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+`
+
+}
+
+function agregarPijama(){
+
+let nombre = document.getElementById("nombre").value
+let cantidad = document.getElementById("cantidad").value
+let precio = document.getElementById("precio").value
+
+if(nombre=="" || cantidad=="" || precio==""){
+mostrarAlerta("Todos los campos son obligatorios","danger")
+return
+}
+
+if(cantidad<=0 || precio<=0){
+mostrarAlerta("Cantidad y precio deben ser mayores a 0","danger")
+return
+}
+
+inventario.push({nombre,cantidad,precio})
+
+guardarDatos()
+actualizarTabla()
+
+mostrarAlerta("Pijama agregada correctamente","success")
+
+document.getElementById("nombre").value=""
+document.getElementById("cantidad").value=""
+document.getElementById("precio").value=""
+
+}
+
+function actualizarTabla(lista=inventario){
+
+let tabla = document.getElementById("tablaInventario")
+tabla.innerHTML=""
+
+lista.forEach(p=>{
+
+tabla.innerHTML += `
+<tr>
+<td>${p.nombre}</td>
+<td>${p.cantidad}</td>
+<td>$${p.precio}</td>
+</tr>
+`
+
+})
+
+}
+
+function buscarPijama(texto){
+
+let resultado = inventario.filter(p =>
+p.nombre.toLowerCase().includes(texto.toLowerCase())
+)
+
+actualizarTabla(resultado)
+
+}
+
+function cargarModificar(){
+
+let select = document.getElementById("selectModificar")
+
+select.innerHTML=""
+
+inventario.forEach((p,i)=>{
+select.innerHTML += `<option value="${i}">${p.nombre}</option>`
+})
+
+cargarDatosModificar()
+
+}
+
+function cargarDatosModificar(){
+
+let index = document.getElementById("selectModificar").value
+
+document.getElementById("nuevoNombre").value = inventario[index].nombre
+document.getElementById("nuevaCantidad").value = inventario[index].cantidad
+document.getElementById("nuevoPrecio").value = inventario[index].precio
+
+}
+
+function modificarPijama(){
+
+let index = document.getElementById("selectModificar").value
+
+inventario[index].nombre = document.getElementById("nuevoNombre").value
+inventario[index].cantidad = document.getElementById("nuevaCantidad").value
+inventario[index].precio = document.getElementById("nuevoPrecio").value
+
+guardarDatos()
+actualizarTabla()
+
+mostrarAlerta("Pijama modificada correctamente","warning")
+
+}
+
+function cargarEliminar(){
+
+let lista = document.getElementById("listaEliminar")
+lista.innerHTML=""
+
+inventario.forEach((p,i)=>{
+
+lista.innerHTML += `
+<li class="list-group-item d-flex justify-content-between">
+${p.nombre}
+<button class="btn btn-danger btn-sm" onclick="eliminarPijama(${i})">Eliminar</button>
+</li>
+`
+
+})
+
+}
+
+function eliminarPijama(index){
+
+inventario.splice(index,1)
+
+guardarDatos()
+actualizarTabla()
+cargarEliminar()
+
+mostrarAlerta("Pijama eliminada correctamente","danger")
+
+}
+
+actualizarTabla()
+
+</script>
+
+</body>
+</html>
